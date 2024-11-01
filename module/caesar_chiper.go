@@ -51,7 +51,7 @@ func (c *CaesarCipher) GetDecryptedText() string {
 }
 
 func (c *CaesarCipher) LogShiftTable(encrypt bool) {
-	fmt.Printf("%-10s %-15s %-15s %-15s %-10s\n", "Index", "Char (Before)", "Char (After)", "ASCII (Before)", "ASCII (After)")
+	fmt.Printf("%-10s %-15s %-15s %-15s %-10s\n", "Index", "Char (sebelum)", "Char (sesudah)", "ASCII (sebelum)", "ASCII (sebelum)")
 	fmt.Println("-----------------------------------------------------------------------")
 
 	shift := c.Shift
