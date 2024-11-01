@@ -9,38 +9,73 @@ import (
 	"strings"
 )
 
-func main() {
+func readInput(prompt string) string {
 	reader := bufio.NewReader(os.Stdin)
+	fmt.Print(prompt)
+	input, _ := reader.ReadString('\n')
+	return strings.TrimSpace(input)
+}
 
-	fmt.Print("Pilih mode (1 untuk enkripsi, 2 untuk dekripsi): ")
-	modeChoice, _ := reader.ReadString('\n')
-	modeChoice = strings.TrimSpace(modeChoice)
+func getModeChoice() (int, error) {
+	modeInput := readInput("Pilih mode (1 untuk enkripsi, 2 untuk dekripsi, 3 untuk exhaustive search): ")
+	modeChoice, err := strconv.Atoi(modeInput)
+	if err != nil || modeChoice < 1 || modeChoice > 3 {
+		return 0, fmt.Errorf("pilihan tidak valid. Silakan pilih 1, 2, atau 3")
+	}
+	return modeChoice, nil
+}
 
-	fmt.Print("Masukkan teks: ")
-	inputText, _ := reader.ReadString('\n')
-	inputText = strings.TrimSpace(inputText)
-
-	fmt.Print("Masukkan jumlah pergeseran: ")
-	inputShift, _ := reader.ReadString('\n')
-	inputShift = strings.TrimSpace(inputShift)
-	shift, err := strconv.Atoi(inputShift)
+func getShift() (int, error) {
+	shiftInput := readInput("Masukkan jumlah pergeseran: ")
+	shift, err := strconv.Atoi(shiftInput)
 	if err != nil {
-		fmt.Println("Jumlah pergeseran harus berupa angka!")
+		return 0, fmt.Errorf("jumlah pergeseran harus berupa angka")
+	}
+	return shift, nil
+}
+
+func main() {
+	modeChoice, err := getModeChoice()
+	if err != nil {
+		fmt.Println(err)
 		return
 	}
 
+	inputText := readInput("Masukkan teks: ")
+
 	cipher := module.CaesarCipher{
-		Text:  inputText,
-		Shift: shift,
+		Text: inputText,
 	}
 
-	if modeChoice == "1" {
+	exhaustive := module.ExhaustiveSearch{
+		CaesarCipher: cipher,
+	}
+
+	if modeChoice == 1 {
+		shift, err := getShift()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		cipher.Shift = shift
 		cipher.Encrypt()
 		fmt.Println("Teks terenkripsi:", cipher.GetEncryptedText())
-	} else if modeChoice == "2" {
+		fmt.Println("")
+		cipher.LogShiftTable(true)
+	} else if modeChoice == 2 {
+		shift, err := getShift()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		cipher.Shift = shift
 		cipher.Decrypt()
 		fmt.Println("Teks terdekripsi:", cipher.GetDecryptedText())
-	} else {
-		fmt.Println("Pilihan tidak valid. Silakan pilih 1 atau 2.")
+		fmt.Println("")
+		cipher.LogShiftTable(false)
+	} else if modeChoice == 3 {
+		exhaustive.CaesarCipher.Text = inputText
+		fmt.Println("Hasil Exhaustive Search:")
+		exhaustive.ExhaustiveKeySearch()
 	}
 }
